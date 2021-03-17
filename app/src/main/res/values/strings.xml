@@ -4,4 +4,5 @@
     <string name="buttonText_accel">加速</string>
     <string name="buttonText_disconnect">切断</string>
     <string name="buttonText_connect">接続</string>
+    <string name="checkboxText_enableNotify">ラジコンからの情報の受信</string>
 </resources>

@@ -16,7 +16,7 @@ public class Controller {
     private static final int ROLL_MEMORY_SIZE = 5;
     private final double[] rollMemory;
     private int index = 0;
-    private byte roll;
+    private int roll;
 
     private byte speed;
 
@@ -32,8 +32,8 @@ public class Controller {
     }
 
     public void setRoll(double x,double y) {
-        rollMemory[index] = Math.toDegrees(Math.atan2(x,y));
-        if(index < ROLL_MEMORY_SIZE){
+        rollMemory[index] = (Math.atan2(x,y))*180/Math.PI - 90;
+        if(index < ROLL_MEMORY_SIZE - 1){
             index++;
         }else {
             index = 0;
@@ -43,13 +43,13 @@ public class Controller {
             result += memory;
         }
         result /= ROLL_MEMORY_SIZE;
-        if(result < 0){
-            result = 0;
+        if(result < -90){
+            result = -90;
         }
-        if (result > 180){
-            result = 180;
+        if (result > 90){
+            result = 90;
         }
-        roll=(byte)result;
+        roll=(int)result;
     }
 
     public void setSpeed(int speed) {
@@ -62,9 +62,10 @@ public class Controller {
         }
     }
 
-    public byte getRoll(){
+    public int getRoll() {
         return roll;
     }
+
 
     public byte getSpeed() {
         return speed;

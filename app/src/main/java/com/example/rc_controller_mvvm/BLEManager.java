@@ -5,14 +5,20 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.CompoundButton;
+
+import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class BLEManager {
     public enum ConnectionStatus{
@@ -23,37 +29,47 @@ public class BLEManager {
     public interface OnBLEEventListener{
         public void onDeviceFound(BluetoothDevice device);
         public void onConnectionStatusChanged(ConnectionStatus status);
-        public void onDataNotified(byte[] dataArray);
+        public void onDataNotified(final byte[] dataArray);
     }
 
     private final Handler handler;
-    private BluetoothAdapter adapter;
+    private final Context context;
+    private final BluetoothAdapter adapter;
     private final ArrayList<OnBLEEventListener> listeners;
 
+    private BluetoothGatt gatt;
+    public final static UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
-            if(newState == BluetoothProfile.STATE_CONNECTED){
-                gatt.discoverServices();
-                for (OnBLEEventListener listener:listeners){
-                    listener.onConnectionStatusChanged(ConnectionStatus.connected);
-                }
-            }else if(newState == BluetoothProfile.STATE_DISCONNECTED){
-                for (OnBLEEventListener listener:listeners){
-                    listener.onConnectionStatusChanged(ConnectionStatus.disconnected);
-                }
-            }else if(newState == BluetoothProfile.STATE_CONNECTING){
-                gatt.discoverServices();
-                for (OnBLEEventListener listener:listeners){
-                    listener.onConnectionStatusChanged(ConnectionStatus.connecting);
-                }
+            switch (newState){
+                case BluetoothGatt.STATE_CONNECTED:
+                    gatt.discoverServices();
+                    for (OnBLEEventListener listener:listeners){
+                        listener.onConnectionStatusChanged(ConnectionStatus.connected);
+                    }
+                    break;
+                case BluetoothGatt.STATE_CONNECTING:
+                case BluetoothGatt.STATE_DISCONNECTING:
+                    for (OnBLEEventListener listener:listeners){
+                        listener.onConnectionStatusChanged(ConnectionStatus.connecting);
+                    }
+                    break;
+                default:
+                    for (OnBLEEventListener listener:listeners){
+                        listener.onConnectionStatusChanged(ConnectionStatus.disconnected);
+                    }
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
+            final byte[] notified = characteristic.getValue();
+            for(OnBLEEventListener listener:listeners){
+                listener.onDataNotified(notified);
+            }
         }
     };
 
@@ -72,20 +88,12 @@ public class BLEManager {
         }
     };
 
-    public BLEManager(){
+
+    public BLEManager(@NonNull BluetoothAdapter adapter, Context context){
+        this.adapter = adapter;
         listeners = new ArrayList<>();
         handler = new Handler(Looper.myLooper());
-    }
-    private void checkAdapter(){
-        if(adapter == null){
-            Log.w("BLEManager","BluetoothAdapter is not attached. No Bluetooth events occur.");
-            throw new NullPointerException("adapter is null");
-        }
-
-    }
-
-    public void setAdapter(BluetoothAdapter adapter) {
-        this.adapter = adapter;
+        this.context = context;
     }
 
     public void addEventListener(OnBLEEventListener listener){
@@ -101,7 +109,6 @@ public class BLEManager {
     }
 
     public void startScan(){
-        checkAdapter();
         if(!adapter.isDiscovering()){
             handler.postDelayed(new Runnable() {
                 @Override
@@ -115,13 +122,52 @@ public class BLEManager {
     }
 
     public void stopScan(){
-        checkAdapter();
         if(!adapter.isDiscovering()){
             adapter.getBluetoothLeScanner().stopScan(scanCallback);
         }
     }
 
     public void connect(String macAddress){
+        gatt = adapter.getRemoteDevice(macAddress).connectGatt(context,false,gattCallback);
+        if(gatt == null){
+            Log.w("BLEManager","connection failed");
+        }
 
+    }
+
+    public void disconnect(){
+        if(gatt != null){
+            gatt.disconnect();
+            gatt = null;
+        }else {
+            Log.i("BLEManager","request disconnect without connection");
+        }
+    }
+
+    public void writeCharacteristic(UUID service,UUID characteristic,byte[] data){
+        if(gatt == null){
+            Log.w("BLEManager","request write without connection");
+            return;
+        }
+        BluetoothGattCharacteristic remoteChara = gatt.getService(service).getCharacteristic(characteristic);
+        remoteChara.setValue(data);
+        gatt.writeCharacteristic(remoteChara);
+    }
+
+    public void changeNotifyEnable(UUID service,UUID characteristic,boolean enable){
+        if(gatt == null){
+            Log.w("BLEManager","request write without connection");
+            return;
+        }
+
+        BluetoothGattCharacteristic remoteChara = gatt.getService(service).getCharacteristic(characteristic);
+        BluetoothGattDescriptor remoteDesc = remoteChara.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG);
+        if(enable){
+            remoteDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        }else {
+            remoteDesc.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+        }
+        gatt.writeDescriptor(remoteDesc);
+        gatt.writeCharacteristic(remoteChara);
     }
 }

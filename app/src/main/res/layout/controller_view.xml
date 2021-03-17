@@ -16,44 +16,56 @@
             android:background="@drawable/button_background"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|left"
+            android:layout_gravity="top|start"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="20dp"
             android:text="@string/buttonText_break"
             android:onLongClick="@{vm.speedDown}"
             android:enabled="@{vm.connected}"
             />
+
         <com.example.rc_controller_mvvm.RepeatButton
             style="@style/Widget.AppCompat.Button"
-            android:background="@drawable/button_background"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|right"
-            android:text="@string/buttonText_accel"
-            android:onLongClick="@{vm.speedUp}"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/button_background"
             android:enabled="@{vm.connected}"
-            />
+            android:onLongClick="@{vm.speedUp}"
+            android:text="@string/buttonText_accel" />
 
         <ToggleButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:textOn="@string/buttonText_disconnect"
-            android:textOff="@string/buttonText_connect"
+            android:layout_gravity="bottom|start"
+            android:text="@{vm.connectionText}"
+            android:textOn="@{vm.connectionText}"
+            android:textOff="@{vm.connectionText}"
+            android:enabled="@{!vm.connecting}"
             android:checked="@{vm.connected}"
+            android:onCheckChange="@{vm.onConnectionChanged}"
             />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal">
+            android:layout_gravity="top|center_horizontal"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{vm.speedText}" />
+                android:layout_marginTop="10dp"
+                android:text="@{vm.speedText}"
+                android:textSize="30sp" />
 
             <CheckBox
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="@string/checkboxText_enableNotify"
+                android:onCheckChange="@{vm.notifyConfigured}" />
 
         </LinearLayout>
 
