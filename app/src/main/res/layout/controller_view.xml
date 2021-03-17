@@ -1,73 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 <data>
     <variable
         name="vm"
         type="com.example.rc_controller_mvvm.ui.main.ControllerViewModel" />
 </data>
-    <FrameLayout
+    <androidx.drawerlayout.widget.DrawerLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
-        <com.example.rc_controller_mvvm.RepeatButton
-            style="@style/Widget.AppCompat.Button"
-            android:background="@drawable/button_background"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|start"
-            android:layout_marginTop="30dp"
-            android:layout_marginStart="20dp"
-            android:text="@string/buttonText_break"
-            android:onLongClick="@{vm.speedDown}"
-            android:enabled="@{vm.connected}"
-            />
+        android:layout_height="match_parent">
 
-        <com.example.rc_controller_mvvm.RepeatButton
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-            android:layout_marginTop="30dp"
-            android:layout_marginEnd="20dp"
-            android:background="@drawable/button_background"
-            android:enabled="@{vm.connected}"
-            android:onLongClick="@{vm.speedUp}"
-            android:text="@string/buttonText_accel" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <ToggleButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:text="@{vm.connectionText}"
-            android:textOn="@{vm.connectionText}"
-            android:textOff="@{vm.connectionText}"
-            android:enabled="@{!vm.connecting}"
-            android:checked="@{vm.connected}"
-            android:onCheckChange="@{vm.onConnectionChanged}"
-            />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
-            android:orientation="vertical">
-
-            <TextView
+            <com.example.rc_controller_mvvm.RepeatButton
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@{vm.speedText}"
-                android:textSize="30sp" />
+                android:layout_gravity="top|start"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/button_background"
+                android:enabled="@{vm.connected}"
+                android:onLongClick="@{vm.speedDown}"
+                android:text="@string/buttonText_break" />
 
-            <CheckBox
+            <com.example.rc_controller_mvvm.RepeatButton
+                style="@style/Widget.AppCompat.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/checkboxText_enableNotify"
-                android:onCheckChange="@{vm.notifyConfigured}" />
+                android:layout_gravity="top|end"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/button_background"
+                android:enabled="@{vm.connected}"
+                android:onLongClick="@{vm.speedUp}"
+                android:text="@string/buttonText_accel" />
 
-        </LinearLayout>
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:checked="@{vm.connected}"
+                android:enabled="@{!vm.connecting}"
+                android:onCheckChange="@{vm.onConnectionChanged}"
+                android:text="@{vm.connectionText}"
+                android:textOff="@{vm.connectionText}"
+                android:textOn="@{vm.connectionText}" />
 
-    </FrameLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@{vm.speedText}"
+                    android:textSize="30sp" />
+
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onCheckChange="@{vm.notifyConfigured}"
+                    android:text="@string/checkboxText_enableNotify" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

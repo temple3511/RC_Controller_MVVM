@@ -1,21 +1,11 @@
 package com.example.rc_controller_mvvm.ui.main;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.util.Log;
-
-import androidx.databinding.ObservableByte;
-
-import java.util.concurrent.ScheduledExecutorService;
-
 public class Controller {
 
 
     private static final int ROLL_MEMORY_SIZE = 5;
     private final double[] rollMemory;
-    private int index = 0;
+    private int index;
     private int roll;
 
     private byte speed;

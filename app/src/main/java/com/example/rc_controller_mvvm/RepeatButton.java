@@ -5,12 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.databinding.BindingAdapter;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,7 +19,6 @@ public class RepeatButton extends AppCompatButton {
     private static final int LONGCLICK_INTERVAL = 100;
     private final Handler handler;
     private ScheduledExecutorService scheduledExecutorService;
-    private final Runnable task;
     private boolean isTouched;
     private boolean isLongTouched;
 
@@ -30,13 +27,6 @@ public class RepeatButton extends AppCompatButton {
         handler = new Handler(Looper.myLooper());
 
         isTouched = false;
-        final View view = this;
-        task = new Runnable() {
-            @Override
-            public void run() {
-                view.performLongClick();
-            }
-        };
     }
 
     @Override
@@ -47,15 +37,7 @@ public class RepeatButton extends AppCompatButton {
             scheduledExecutorService = null;
         }
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                if(isLongTouched){
-                    handler.post(task);
-                }
-
-            }
-        },LONGCLICK_INTERVAL,LONGCLICK_INTERVAL,LONGCLICK_SCALE);
+        scheduledExecutorService.scheduleAtFixedRate(RepeatButton.this::performLongClick,LONGCLICK_INTERVAL,LONGCLICK_INTERVAL,LONGCLICK_SCALE);
     }
 
     @Override
@@ -66,6 +48,15 @@ public class RepeatButton extends AppCompatButton {
             scheduledExecutorService = null;
         }
     }
+
+    @Override
+    public boolean performLongClick() {
+        if(isLongTouched){
+            super.performLongClick();
+        }
+        return true;
+    }
+
     @Override
     public boolean performClick() {
         super.performClick();
@@ -80,12 +71,9 @@ public class RepeatButton extends AppCompatButton {
 
                 case MotionEvent.ACTION_DOWN:
                     isTouched = true;
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(isTouched){
-                                isLongTouched = true;
-                            }
+                    handler.postDelayed(() -> {
+                        if(isTouched){
+                            isLongTouched = true;
                         }
                     },500);
 

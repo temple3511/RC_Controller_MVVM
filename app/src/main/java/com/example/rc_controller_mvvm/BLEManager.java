@@ -6,14 +6,12 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 
@@ -27,9 +25,9 @@ public class BLEManager {
         connecting
     }
     public interface OnBLEEventListener{
-        public void onDeviceFound(BluetoothDevice device);
-        public void onConnectionStatusChanged(ConnectionStatus status);
-        public void onDataNotified(final byte[] dataArray);
+        void onDeviceFound(BluetoothDevice device);
+        void onConnectionStatusChanged(ConnectionStatus status);
+        void onDataNotified(final byte[] dataArray);
     }
 
     private final Handler handler;
@@ -110,12 +108,7 @@ public class BLEManager {
 
     public void startScan(){
         if(!adapter.isDiscovering()){
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    stopScan();
-                }
-            },10000);
+            handler.postDelayed(this::stopScan,10000);
 
             adapter.getBluetoothLeScanner().startScan(scanCallback);
         }

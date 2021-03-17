@@ -1,26 +1,18 @@
 package com.example.rc_controller_mvvm.ui.main;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 
 import androidx.databinding.BindingAdapter;
-import androidx.databinding.BindingMethod;
-import androidx.databinding.BindingMethods;
-import androidx.databinding.Observable;
 import androidx.databinding.ObservableBoolean;
-import androidx.databinding.ObservableByte;
 import androidx.databinding.ObservableField;
 import androidx.databinding.ObservableInt;
-import androidx.databinding.PropertyChangeRegistry;
 import androidx.lifecycle.ViewModel;
 
 import com.example.rc_controller_mvvm.BLEManager;
@@ -38,32 +30,9 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
     private final static String DEFAULT_DEVICE_ADDRESS = "68:27:19:21:B4:7F";
 
     public static class GattAttributes {
-        private static final HashMap<String, String> attributes = new HashMap<>();
-        public static String HEART_RATE_MEASUREMENT = "00002a37-0000-1000-8000-00805f9b34fb";
-        public static String POWER = "00002B05-0000-1000-8000-00805f9b34fb";
-        public static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
-        public static String UART_OVER_BLE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"; // UART service UUID 6E400001B5A3F393E0A9E50E24DCCA9E
-        public static String CLIENT_CHARACTERISTIC_Rx = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; //6e400002b5a3f393e0a9e50e24dcca9e
-        public static String CLIENT_CHARACTERISTIC_Tx = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; //6e400003b5a3f393e0a9e50e24dcca9e
-
-        static {
-            // Sample Services.
-            attributes.put("0000180d-0000-1000-8000-00805f9b34fb", "Heart Rate Service");
-            attributes.put("0000180f-0000-1000-8000-00805f9b34fb", "Battery Service");
-            attributes.put("0000180a-0000-1000-8000-00805f9b34fb", "Device Information Service");
-            // Sample Characteristics.
-            attributes.put(HEART_RATE_MEASUREMENT, "Heart Rate Measurement");
-            attributes.put("00002a29-0000-1000-8000-00805f9b34fb", "Manufacturer Name String");
-            attributes.put("00002B05-0000-1000-8000-00805f9b34fb", "Power");
-            attributes.put(UART_OVER_BLE, "UART over BLE");
-            attributes.put(CLIENT_CHARACTERISTIC_Rx, "Rx for client");
-            attributes.put(CLIENT_CHARACTERISTIC_Tx, "Tx for client");
-        }
-
-        public static String lookup(String uuid, String defaultName) {
-            String name = attributes.get(uuid);
-            return name == null ? defaultName : name;
-        }
+        public static final String UART_OVER_BLE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"; // UART service UUID 6E400001B5A3F393E0A9E50E24DCCA9E
+        public static final String CLIENT_CHARACTERISTIC_Rx = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; //6e400002b5a3f393e0a9e50e24dcca9e
+        public static final String CLIENT_CHARACTERISTIC_Tx = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; //6e400003b5a3f393e0a9e50e24dcca9e
     }
 
 
@@ -223,7 +192,7 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
     }
 
     private void connectionUpdate(){
-        String text="";
+        String text;
         if(connected.get()){
             if(connecting.get()){
                 text = "接続中";
