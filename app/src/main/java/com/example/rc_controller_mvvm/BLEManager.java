@@ -22,18 +22,28 @@ public class BLEManager {
     public enum ConnectionStatus{
         connected,
         disconnected,
-        connecting
+        connecting,
+        disconnecting
     }
-    public interface OnBLEEventListener{
+    public interface OnDeviceFoundListener{
         void onDeviceFound(BluetoothDevice device);
+        void onScanFinish();
+    }
+    public interface OnConnectionChangedLister{
         void onConnectionStatusChanged(ConnectionStatus status);
+    }
+
+    public interface OnDataNotifiedLister{
         void onDataNotified(final byte[] dataArray);
     }
 
     private final Handler handler;
     private final Context context;
     private final BluetoothAdapter adapter;
-    private final ArrayList<OnBLEEventListener> listeners;
+    private final ArrayList<OnConnectionChangedLister> connectionChangedListers;
+    private final ArrayList<OnDataNotifiedLister> dataNotifiedListers;
+    private final ArrayList<OnDeviceFoundListener> onDeviceFoundListeners;
+
 
     private BluetoothGatt gatt;
     public final static UUID CLIENT_CHARACTERISTIC_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
@@ -41,23 +51,23 @@ public class BLEManager {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
+            ConnectionStatus statEnum;
             switch (newState){
                 case BluetoothGatt.STATE_CONNECTED:
                     gatt.discoverServices();
-                    for (OnBLEEventListener listener:listeners){
-                        listener.onConnectionStatusChanged(ConnectionStatus.connected);
-                    }
+                    statEnum = ConnectionStatus.connected;
                     break;
                 case BluetoothGatt.STATE_CONNECTING:
+                    statEnum = ConnectionStatus.connecting;
+                    break;
                 case BluetoothGatt.STATE_DISCONNECTING:
-                    for (OnBLEEventListener listener:listeners){
-                        listener.onConnectionStatusChanged(ConnectionStatus.connecting);
-                    }
+                    statEnum = ConnectionStatus.disconnecting;
                     break;
                 default:
-                    for (OnBLEEventListener listener:listeners){
-                        listener.onConnectionStatusChanged(ConnectionStatus.disconnected);
-                    }
+                    statEnum = ConnectionStatus.disconnected;
+            }
+            for (OnConnectionChangedLister listener:connectionChangedListers){
+                listener.onConnectionStatusChanged(statEnum);
             }
         }
 
@@ -65,7 +75,7 @@ public class BLEManager {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             final byte[] notified = characteristic.getValue();
-            for(OnBLEEventListener listener:listeners){
+            for(OnDataNotifiedLister listener:dataNotifiedListers){
                 listener.onDataNotified(notified);
             }
         }
@@ -75,7 +85,7 @@ public class BLEManager {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            for(OnBLEEventListener listener:listeners){
+            for(OnDeviceFoundListener listener:onDeviceFoundListeners){
                 listener.onDeviceFound(result.getDevice());
             }
         }
@@ -89,34 +99,64 @@ public class BLEManager {
 
     public BLEManager(@NonNull BluetoothAdapter adapter, Context context){
         this.adapter = adapter;
-        listeners = new ArrayList<>();
+        connectionChangedListers = new ArrayList<>();
+        onDeviceFoundListeners = new ArrayList<>();
+        dataNotifiedListers = new ArrayList<>();
         handler = new Handler(Looper.myLooper());
         this.context = context;
     }
 
-    public void addEventListener(OnBLEEventListener listener){
-        if(!listeners.contains(listener)){
-            listeners.add(listener);
+    public void setConnectionChangedLister (OnConnectionChangedLister listener){
+        if(!connectionChangedListers.contains(listener)){
+            connectionChangedListers.add(listener);
+        }
+    }
+    public void setDataNotifiedLister (OnDataNotifiedLister listener){
+        if(!dataNotifiedListers.contains(listener)){
+            dataNotifiedListers.add(listener);
+        }
+    }
+    public void setDeviceFoundListeners (OnDeviceFoundListener listener){
+        if(!onDeviceFoundListeners.contains(listener)){
+            onDeviceFoundListeners.add(listener);
         }
     }
 
-    public void removeEventListener(OnBLEEventListener listener){
-        if(!listeners.contains(listener)){
-            listeners.remove(listener);
+    public void resetConnectionChangedLister (OnConnectionChangedLister listener){
+        if(!connectionChangedListers.contains(listener)){
+            connectionChangedListers.remove(listener);
+        }
+    }
+    public void resetDataNotifiedLister (OnDataNotifiedLister listener){
+        if(!dataNotifiedListers.contains(listener)){
+            dataNotifiedListers.remove(listener);
+        }
+    }
+    public void resetDeviceFoundListeners (OnDeviceFoundListener listener){
+        if(!onDeviceFoundListeners.contains(listener)){
+            onDeviceFoundListeners.remove(listener);
         }
     }
 
+
+    private boolean isScanning = false;
     public void startScan(){
         if(!adapter.isDiscovering()){
             handler.postDelayed(this::stopScan,10000);
-
             adapter.getBluetoothLeScanner().startScan(scanCallback);
+            isScanning = true;
         }
     }
 
     public void stopScan(){
         if(!adapter.isDiscovering()){
-            adapter.getBluetoothLeScanner().stopScan(scanCallback);
+            if(isScanning){
+                isScanning = false;
+                adapter.getBluetoothLeScanner().stopScan(scanCallback);
+                for(OnDeviceFoundListener listener:onDeviceFoundListeners){
+                    listener.onScanFinish();
+                }
+            }
         }
     }
 

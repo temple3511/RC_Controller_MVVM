@@ -5,9 +5,7 @@
         name="vm"
         type="com.example.rc_controller_mvvm.ui.main.ControllerViewModel" />
 </data>
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -37,16 +35,57 @@
                 android:onLongClick="@{vm.speedUp}"
                 android:text="@string/buttonText_accel" />
 
-            <ToggleButton
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
-                android:checked="@{vm.connected}"
-                android:enabled="@{!vm.connecting}"
-                android:onCheckChange="@{vm.onConnectionChanged}"
-                android:text="@{vm.connectionText}"
-                android:textOff="@{vm.connectionText}"
-                android:textOn="@{vm.connectionText}" />
+                android:orientation="horizontal">
+
+                <ToggleButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="@{vm.connected}"
+                    android:enabled="@{!vm.connecting}"
+                    android:onCheckChange="@{vm.onConnectionChanged}"
+                    android:text="@{vm.connectionText}"
+                    android:textOff="@{vm.connectionText}"
+                    android:textOn="@{vm.connectionText}" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="接続先"
+                    android:textSize="24sp"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{vm.deviceName}"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@{vm.deviceAddress}"
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="変更する"
+                    android:onClick="@{vm.deviceChangeAction}"
+                    android:id="@+id/changeDeviceButton"/>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -68,12 +107,5 @@
                     android:text="@string/checkboxText_enableNotify" />
 
             </LinearLayout>
-
         </FrameLayout>
-
-        <com.google.android.material.navigation.NavigationView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

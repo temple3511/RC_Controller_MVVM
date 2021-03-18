@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:background="#000000"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:background="@color/white" />
+
+    <TextView
+        android:id="@+id/textView_deviceName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="デバイス名"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_gravity="start"
+        android:background="@color/purple_500" />
+
+    <TextView
+        android:id="@+id/textView_deviceAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="MACアドレス"
+        android:textAlignment="viewEnd"
+        android:textColor="@color/teal_200"
+        android:textSize="10sp" />
+</LinearLayout>

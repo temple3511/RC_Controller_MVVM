@@ -37,10 +37,15 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
 
 
 
+
+
     // TODO: Implement the ViewModel
 
     private final Handler handler;
     private BLEManager bleManager;
+    private final ObservableField<String> deviceAddress;
+    private final ObservableField<String> deviceName;
+    private final ObservableField<View.OnClickListener> deviceChangeAction;
     private final Controller controller;
     private final ObservableBoolean connected;
     private final ObservableBoolean connecting;
@@ -58,7 +63,7 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
             byte[] transmit = new byte[2];
             transmit[1] = speed;
             //Log.d("Controller","Roll="+roll.get());
-            transmit[0] = (byte) (roll.get()+90);
+            transmit[0] = (byte) (-roll.get()+90);
             bleManager.writeCharacteristic(UUID.fromString(GattAttributes.UART_OVER_BLE),UUID.fromString(GattAttributes.CLIENT_CHARACTERISTIC_Tx),transmit);
             //Log.d("CVM","Transmit control data.");
 
@@ -78,12 +83,8 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
 
     }
 
-    private final BLEManager.OnBLEEventListener bleEventListener = new BLEManager.OnBLEEventListener() {
-        @Override
-        public void onDeviceFound(BluetoothDevice device) {
-
-        }
-
+    private final BLEManager.OnConnectionChangedLister bleEventListener = new BLEManager.OnConnectionChangedLister()
+    {
         @Override
         public void onConnectionStatusChanged(BLEManager.ConnectionStatus status) {
             handler.post(() ->{
@@ -109,18 +110,12 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
                         connecting.set(false);
                         break;
                     case connecting:
+                    case disconnecting:
                         connecting.set(true);
 
                 }
                 connectionUpdate();
-
             });
-        }
-
-
-        @Override
-        public void onDataNotified(byte[] dataArray) {
-
         }
     };
 
@@ -141,7 +136,7 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if(isChecked){
-                bleManager.connect(DEFAULT_DEVICE_ADDRESS);
+                bleManager.connect(deviceAddress.get().equals("")? DEFAULT_DEVICE_ADDRESS : deviceAddress.get());
             }else {
                 bleManager.disconnect();
             }
@@ -164,6 +159,11 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
         super();
         handler = new Handler(Looper.getMainLooper());
 
+        deviceAddress = new ObservableField<>();
+        deviceAddress.set("");
+        deviceName = new ObservableField<>();
+        deviceName.set("");
+
         connected = new ObservableBoolean();
         connected.set(false);
         connecting = new ObservableBoolean();
@@ -177,6 +177,9 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
         speed = 0;
         speedText = new ObservableField<>();
         setSpeedText();
+
+        deviceChangeAction = new ObservableField<>();
+        deviceChangeAction.set(null);
 
     }
     public ObservableBoolean getConnected(){
@@ -214,9 +217,35 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
         return roll;
     }
 
+    public void setDeviceName(String deviceName){
+        this.deviceName.set(deviceName);
+    }
+
+    public void setDeviceAddress(String deviceAddress) {
+        if(connected.get()){
+            bleManager.disconnect();
+        }
+        this.deviceAddress.set(deviceAddress);
+    }
+
+    public void setChangeDeviceButtonAction(View.OnClickListener listener){
+        deviceChangeAction.set(listener);
+    }
+
+    public ObservableField<String> getDeviceAddress(){
+        return deviceAddress;
+    }
+
+    public ObservableField<String> getDeviceName() {
+        return deviceName;
+    }
 
     public ObservableField<String> getSpeedText(){
         return speedText;
+    }
+
+    public ObservableField<View.OnClickListener> getDeviceChangeAction() {
+        return deviceChangeAction;
     }
 
     private void setSpeedText(){
@@ -229,10 +258,10 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
         }
         if(this.bleManager != null){
             this.bleManager.disconnect();
-            this.bleManager.removeEventListener(bleEventListener);
+            this.bleManager.resetConnectionChangedLister(bleEventListener);
         }
         this.bleManager = bleManager;
-        this.bleManager.addEventListener(bleEventListener);
+        this.bleManager.setConnectionChangedLister(bleEventListener);
     }
 
 
