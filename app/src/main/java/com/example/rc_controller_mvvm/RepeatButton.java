@@ -51,7 +51,7 @@ public class RepeatButton extends AppCompatButton {
 
     @Override
     public boolean performLongClick() {
-        if(isLongTouched){
+        if(isLongTouched && isEnabled()){
             super.performLongClick();
         }
         return true;

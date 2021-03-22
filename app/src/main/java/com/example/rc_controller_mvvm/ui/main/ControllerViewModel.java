@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 
@@ -65,14 +66,15 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
             //Log.d("Controller","Roll="+roll.get());
             transmit[0] = (byte) (-roll.get()+90);
             bleManager.writeCharacteristic(UUID.fromString(GattAttributes.UART_OVER_BLE),UUID.fromString(GattAttributes.CLIENT_CHARACTERISTIC_Tx),transmit);
-            //Log.d("CVM","Transmit control data.");
+
+            Log.d("CVM","Transmit control data.");
 
 
         }
     }
 
     private boolean changeSpeed(int diff){
-        if(controller != null){
+        if(controller != null ){
             controller.setSpeed(controller.getSpeed()+diff);
             speed=controller.getSpeed();
             setSpeedText();
@@ -105,6 +107,7 @@ public class ControllerViewModel extends ViewModel implements SensorEventListene
                             scheduledExecutorService.shutdown();
                             scheduledExecutorService = null;
                         }
+                        connected.set(false);
                         speed = 0;
                         setSpeedText();
                         connecting.set(false);

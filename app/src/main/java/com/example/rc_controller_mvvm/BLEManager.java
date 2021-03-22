@@ -184,6 +184,13 @@ public class BLEManager {
         }
         BluetoothGattCharacteristic remoteChara = gatt.getService(service).getCharacteristic(characteristic);
         remoteChara.setValue(data);
+        StringBuilder builder = new StringBuilder();
+        for(byte octet:data){
+            builder.append("0x");
+            builder.append(String.valueOf(octet));
+            builder.append("\n");
+        }
+        Log.i("BLEManager","write data=\n"+builder.toString());
         gatt.writeCharacteristic(remoteChara);
     }
 
